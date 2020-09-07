@@ -1,5 +1,7 @@
 import re
 import jieba.posseg as pseg
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 
 def isname(text):
@@ -40,6 +42,39 @@ def findChinese(text):
     words = pseg.cut(res)
     return [w.word for w in words]
 
+
+def text_clean(sentence):
+    sentence = re.sub(r" ", "", sentence)
+    sentence = sentence.replace('\r', '').replace('\n', '').replace('\t', '')
+    sentence = re.sub(r"\s+", "", sentence)
+    sentence = re.sub(r"\u3000", '', sentence)
+    sentence = re.sub(r"\r", '', sentence)
+    sentence = re.sub(r"[0-9\s+\.\!\/_,$%^*()?;；:-【-——丨〔：】+\"\']+|[+——！，;:。？、~@#￥%……&*（）]+", " ", sentence)
+
+    return sentence
+
+
+def tag_clean(html_str):
+    html = BeautifulSoup(html_str, 'lxml')
+    [s.extract() for s in html.findAll('meta')]
+    [s.extract() for s in html.findAll('script')]
+    [s.extract() for s in html.findAll('link')]
+    [s.extract() for s in html.findAll('noscript')]
+    [s.extract() for s in html.findAll('img')]
+    [s.extract() for s in html.findAll('style')]
+    [s.extract() for s in html.findAll('input')]
+    [s.extract() for s in html.findAll('iframe')]
+    [s.extract() for s in html.findAll('br')]
+    comments = html.findAll(text=lambda text: isinstance(text, Comment))
+    [s.extract() for s in comments]
+
+    return str(html)
+
+
+def get_domain_url(url):
+    parseresult = urlparse(url)
+    domain_url = parseresult[0] + '://' + parseresult[1]
+    return domain_url
 
 
 if __name__ == '__main__':

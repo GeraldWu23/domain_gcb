@@ -1,0 +1,8 @@
+# .idea
+.idea/
+
+# cfg files
+*.cfg
+
+# pyc file
+*.pyc
