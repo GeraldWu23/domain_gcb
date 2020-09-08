@@ -1,6 +1,6 @@
 import re
 import jieba.posseg as pseg
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from urllib.parse import urlparse
 
 
@@ -76,6 +76,15 @@ def get_domain_url(url):
     domain_url = parseresult[0] + '://' + parseresult[1]
     return domain_url
 
+
+def filtered_url(string):
+    if len(string) >= 4 and string[:4] == 'java':
+        return False
+
+    if len(string) >= 10 and string[:10] == 'http://202':
+        return False
+
+    return True
 
 if __name__ == '__main__':
 

@@ -31,6 +31,8 @@ CONCURRENT_REQUESTS = 1
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
+RETRY_TIMES = 1
+DOWNLOAD_TIMEOUT = 60
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = True  # 这里将COOKIES_ENABLED参数置为True，使根据cookies判断访问的站点不能发现爬虫轨迹，防止被ban
