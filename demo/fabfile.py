@@ -5,7 +5,11 @@ import subprocess
 import socket
 CONTEXTPATH = '~/domain_gcb/'
 
-env.hosts = ['hjj@172.16.7.22',
+env.hosts = ['hjj@172.16.7.20',
+             'hjj@172.16.7.22',
+             'hjj@172.16.7.23',
+             'hjj@172.16.7.24',
+             'hjj@172.16.7.25',
              'hjj@172.16.7.26']
 env.password = 'EF317F870B@**'
 env.parallel = True

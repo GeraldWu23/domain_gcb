@@ -2,6 +2,7 @@ import re
 import jieba.posseg as pseg
 from bs4 import BeautifulSoup, Comment
 from urllib.parse import urlparse
+from random import random
 
 
 def isname(text):
@@ -85,6 +86,46 @@ def filtered_url(string):
         return False
 
     return True
+
+
+def roulette(item_list, value_list, return_ind=False):
+    """
+    random choose one of the item in item_list
+    according to the value in value_list
+
+    :param item_list: a list of name
+    :param value_list: a list of value, with the same length of item_list
+    :param return_ind: if return the serial number of the returned item
+    :return: (ind), one of the item_list
+    """
+
+    if len(item_list) < 1 or len(item_list) != len(value_list):
+        return False
+    elif len(item_list) == 1:
+        return item_list[0]
+    if min(value_list) <= 0:
+        return False
+
+    opt_value_list = [val**2 for val in value_list]  # make the roulette more greedy
+    try:
+        old_sum = sum(opt_value_list)
+        per_list = [val/old_sum for val in opt_value_list]
+    except:
+        with open('old_sum_test.txt', 'a') as f:
+            f.write(str(opt_value_list) + '\n')
+        return False
+    per_list[-1] = 1 - sum(per_list[:-1])  # make it sum 1
+
+    ind = random()
+    bound = 0  # bound value
+    for i in range(len(item_list)):
+        bound += per_list[i]  # if ind in this block, corresponding item is chosen
+        if ind <= bound:
+            if not return_ind:
+                return item_list[i]
+            else:
+                return i, item_list[i]
+
 
 if __name__ == '__main__':
 

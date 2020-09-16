@@ -6,6 +6,8 @@ import json
 from time import time, sleep
 import datetime
 import numpy as np
+from copy import deepcopy
+from math import log
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -14,7 +16,7 @@ from spiders.node import Node, Domain, mark_nodes, check_exist
 from StrictHub import isStrictHub
 from utilities import get_domain_url, filtered_url
 from settings import REDIS_PORT, REDIS_HOST
-from copy import deepcopy
+
 
 
 def parse(url_list):
@@ -48,8 +50,8 @@ def parse(url_list):
     print(f'\n\npush end, {len(url_list)}\n\n')
 
     # crawl info from urls with scrapy-redis
-    # worker = subprocess.Popen("fab crawlMySpider".split())
-    worker = subprocess.Popen("scrapy crawl MySpider".split())  # FIXME
+    worker = subprocess.Popen("fab crawlMySpider".split())
+    #worker = subprocess.Popen("scrapy crawl MySpider".split())  # FIXME
 
     while worker.poll() is None:  # not finished
         while r.llen("MySpider:items") > 0:
@@ -62,8 +64,8 @@ def parse(url_list):
 
     while r.llen("MySpider:start_urls") > 0:  # crawler killed by error
         # print(f'\n\n\n\n\n\n\nencountering an error url: {url}')
-        # worker = subprocess.Popen("fab crawlMySpider".split())
-        worker = subprocess.Popen("scrapy crawl MySpider".split())  # FIXME
+        worker = subprocess.Popen("fab crawlMySpider".split())
+        #worker = subprocess.Popen("scrapy crawl MySpider".split())  # FIXME
 
         while worker.poll() is None:  # not finished
             while r.llen("MySpider:items") > 0:
@@ -169,7 +171,8 @@ def parse_domain(domain_url):
         parsed_urls, content_list, html_list, offspring_list = parse(domain_url)
         _ = html_list[0]
     except:
-        print('gen 0 parse error')
+        print('gen 0 parse error: domain_url')
+        sleep(10)
         return False
 
     domain_node = Domain(url=parsed_urls[0], content=content_list[0], html=html_list[0],
@@ -265,12 +268,25 @@ def parse_domain(domain_url):
     for url in domain_node.visited_urls:
         domain_node.domain_set.add(get_domain_url(url))
 
+    # get domain score
+    domain_node.get_score()
+
     return domain_node
 
 
 if __name__ == '__main__':
 
     start = time()
-    n = parse_domain("http://chxy.cug.edu.cn/index.htm")
+    HUT = parse_domain("https://chemeng.hebut.edu.cn/")
+    end = time()
+    print(f'time used is {end - start}s.')
+
+    start = time()
+    CUG = parse_domain("http://chxy.cug.edu.cn/index.htm")
+    end = time()
+    print(f'time used is {end - start}s.')
+
+    start = time()
+    XDU = parse_domain("https://cs.xidian.edu.cn/")
     end = time()
     print(f'time used is {end - start}s.')

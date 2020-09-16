@@ -5,11 +5,12 @@ A container of url information
 import os
 import sys
 from time import sleep
+from math import log
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from dupefilter import request_fingerprint
-# from utilities import
+from utilities import get_domain_url
 
 # hyperparametres
 
@@ -61,11 +62,29 @@ class Domain(Node):
         self.visited_urls = set()  # all urls under this Domain Node
         self.Authority = set()  # all Authority pages(Node) under this Domain Node
         self.Hub = set()  # all Hub pages(Node) under this Domain Node
-        self.domain_set = {url}  # all domain urls under this domain
+        self.domain_set = {get_domain_url(url)}  # all domain urls under this domain
         self.Domain_score = None
+        self.score = None
 
     def get_score(self):
-        pass
+        """
+        input a domain node, return the score of the node
+        the larger the score, the more likely the node is related to our target
+
+        :return: float
+        """
+
+        nA = float(len(set([n.url for n in self.Authority])))  # number of Authority nodes with unique url
+        nV = float(len(self.visited_urls))  # number of visited urls
+
+        # error sink behaviour of domain node
+        if nA >= nV or nA < 0:
+            return False
+        try:
+            self.score = log(nA) * (nA / nV) ** 0.06
+        except:
+            self.score = 0.01  # set a minimum score which is not 0
+        return self.score  # TODO: make a smoother curve when x > 0.05
 
 
 def mark_nodes(node, visited_dict):

@@ -26,7 +26,7 @@ class RedisSpiderSmartIdleClosedExensions(object):
         self.idle_number = idle_number
         self.idle_list = []
         self.idle_count = 0
-        self.r = redis.Redis(host='localhost', port='6379', db=0)  # port=6379 in pc, 10031 in server FIXME:can we use REDIS_HOST & REDIS_PORT here
+        self.r = redis.Redis(host='localhost', port='10031', db=0)  # port=6379 in pc, 10031 in server FIXME:can we use REDIS_HOST & REDIS_PORT here
                  
 
     @classmethod

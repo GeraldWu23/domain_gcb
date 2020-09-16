@@ -85,7 +85,7 @@ EXTENSIONS= {
 #redis配置(下面有两种方式)
 #方式一：没有密码
 REDIS_HOST = 'localhost'  # localhost
-REDIS_PORT = 6379  # 10031, 6379
+REDIS_PORT = 10031  # 10031, 6379
 #redis字符集设定
 REDIS_ENCODING = 'utf-8'
 
@@ -94,7 +94,7 @@ REDIS_ENCODING = 'utf-8'
 # MONGODB 主机名
 MONGODB_HOST =  'localhost' # localhost
 # MONGODB 端口号
-MONGODB_PORT = '11044'  # 11044 in server, 27017 in pc
+MONGODB_PORT = '27017'  # 11044 in server, 27017 in pc
 # 数据库名称
 MONGODB_DBNAME = "cailiao"
 # 存放数据的表名称

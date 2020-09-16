@@ -4,7 +4,7 @@ import requests
 from urllib import parse
 
 # 某一页的反向链接
-def page_backward_link_url(url, headers):
+def page_backward_link_url(url):
     backward_link_url = []
     # response = requests.get(url, headers = headers)
     response = requests.get(url)
@@ -67,4 +67,4 @@ def all_page_backward_link(url_input):
 if __name__ == "__main__":
     url = 'http://sports.sina.com.cn/'
     res_back_link_list = all_page_backward_link(url)
-    print('res_back_link_list===',len(res_back_link_list))
+    print('res_back_link_list===',res_back_link_list)
