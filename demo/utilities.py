@@ -3,6 +3,8 @@ import jieba.posseg as pseg
 from bs4 import BeautifulSoup, Comment
 from urllib.parse import urlparse
 from random import random
+from time import localtime
+from pymongo import MongoClient
 
 
 def isname(text):
@@ -127,13 +129,75 @@ def roulette(item_list, value_list, return_ind=False):
                 return i, item_list[i]
 
 
+def get_local_timestamp():
+    """
+    get local time stamp in f'hour:min:sec, day.month.year, day in week'
+
+    :return: str
+    """
+    lc = localtime()
+    WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    return f'{lc.tm_hour}:{lc.tm_min}:{lc.tm_sec}, {lc.tm_mday}.{lc.tm_mon}.{lc.tm_year}, {WEEK[lc.tm_wday]}'
+
+
+def format_time_period(start=None, end=None):
+    """
+    return formated string representing a timestamp
+
+    :param start: start time or duration if end is not given
+    :param end: end time
+    :return:  str
+    """
+    res = ''
+    if start and end:
+        dur = end - start
+        assert end > start, 'tenet ?'
+    elif start:
+        dur = start  # get duration directly
+    else:
+        assert False, 'time not given'
+
+    h = int(dur/3600)
+    if h > 0:
+        res += f'{h}h '
+        dur %= 3600
+    min = int(dur/60)
+    if min > 0:
+        res += f'{min}min '
+        dur %= 60
+    s = dur
+    res += f'{s}s '
+    return res
+
+
+def record2mongo(dbname, key, value):
+    """
+    record key value pair to crawlab_test
+    :param dbname: str
+    :param key: record key
+    :param value: record value
+    :return: bool
+    """
+
+    try:
+        client = MongoClient('mongodb://172.16.7.20:27017')  # server:172.16.7.20:27017
+        db = client['crawlab_test'][dbname]
+        db.insert_one({key:value})
+    except:
+        return False
+    return True
+
+
+
+
 if __name__ == '__main__':
 
-    p1 = '帮会建了徽信群 没在群里的加下徽信:[30109552300]，晚上群里有活动通知大家，(抢资源)，争地盘，谢谢配合。i love you '
-    p2 = '<a><img>sdfasgdfgf</img><div>sdfsdfsdfasdgf</div><span>徐璋勇</span></a>'
-
-    pre = re.compile(u'[\u4e00-\u9fa5]')
-    res = re.findall(pre, p2)
-    res1 = ''.join(res)
-    print(res1)
+    # p1 = '帮会建了徽信群 没在群里的加下徽信:[30109552300]，晚上群里有活动通知大家，(抢资源)，争地盘，谢谢配合。i love you '
+    # p2 = '<a><img>sdfasgdfgf</img><div>sdfsdfsdfasdgf</div><span>徐璋勇</span></a>'
+    #
+    # pre = re.compile(u'[\u4e00-\u9fa5]')
+    # res = re.findall(pre, p2)
+    # res1 = ''.join(res)
+    # print(res1)
+    print(get_local_timestamp())
 

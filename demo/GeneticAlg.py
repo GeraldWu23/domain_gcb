@@ -12,7 +12,7 @@ from backward_link import page_backward_link_url as mutate
 # 爬行控制子系统
 class CrawlControl:
 
-    def __init__(self, start_urls=[], sel_quota=None, cr_quota=None, mut_quota=None, mut_rate=None):  # make sure they are domain urls
+    def __init__(self, start_urls=[], sel_quota=None, cr_quota=None, mut_quota=None, mut_rate=None, strictHubthres=5):  # make sure they are domain urls
 
         self.population = []  # processing generation
         self.visited_domain = set()  # visited domain urls
@@ -20,16 +20,17 @@ class CrawlControl:
         self.cr_quota = cr_quota  # number of children picked from each parent
         self.mut_quota = mut_quota  # number of mutation picked from each domain
         self.mut_rate = mut_rate  # by which rate a node mutates
+        self.strictHubthres = strictHubthres
 
         for url in start_urls:
-            # try:
-            if url not in self.visited_domain:
-                domain_node = parse_domain(url)
-                domain_node.get_score()
-                self.population.append(domain_node)
-                self.visited_domain.add(domain_node.url)
-            # except:
-            #     pass
+            try:
+                if url not in self.visited_domain:
+                    domain_node = parse_domain(url, self.strictHubthres)
+                    domain_node.get_score()
+                    self.population.append(domain_node)
+                    self.visited_domain.add(domain_node.url)
+            except:
+                pass
 
     def evolve(self):
         if not self.population:
@@ -85,7 +86,7 @@ class CrawlControl:
                 shuffle(children_urls)
 
             for url in children_urls:  # parse children's urls
-                domain = parse_domain(url)
+                domain = parse_domain(url, self.strictHubthres)
                 if not domain:
                     continue
                 domain.get_score()
@@ -123,7 +124,7 @@ class CrawlControl:
                 shuffle(mutation_pool)
 
             for url in mutation_pool:  # parse mutants' urls
-                domain = parse_domain(url)
+                domain = parse_domain(url, self.strictHubthres)
                 domain.get_score()
                 self.visited_domain.add(domain.url)
                 mutants.append(domain)  # add mutants to mutant list

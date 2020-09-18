@@ -153,11 +153,12 @@ def parse_node(node, forbidden=None):
     return offspring_nodes
 
 
-def parse_domain(domain_url):
+def parse_domain(domain_url, threshold=5):
     """
     input a string representing a domain url, return a node containing the information in this domain
 
     :param domain_url: a string representing a url
+    :param threshold: strictHub recognition threhosld
     :return: a node representing this domain with its information
     """
     generation = 0
@@ -184,7 +185,7 @@ def parse_domain(domain_url):
     dep1_nodes = parse_node(domain_node, domain_node.visited_urls)
     for url in domain_node.url_list:  # in case that url in url_list different from that in parsed_list
         domain_node.visited_urls.add(url)
-    if isStrictHub(domain_node.html, threshold=5):
+    if isStrictHub(domain_node.html, threshold=threshold):
         domain_node.Hub.add(domain_node)
         domain_node.type = 'Hub'
         for node in dep1_nodes:
@@ -210,7 +211,7 @@ def parse_domain(domain_url):
         next_parents = []
         ul = [node.url for node in parents]
         for node in parents:
-            if not node.type and isStrictHub(node.html, threshold=5):
+            if not node.type and isStrictHub(node.html, threshold=threshold):
                 satisfied = True
                 domain_node.Hub.add(node)
                 node.type = 'Hub'
@@ -231,7 +232,7 @@ def parse_domain(domain_url):
                     # TODO: if an Authority is exposed under a non-StrictHub page, it will be regards as not-related permanently
                     not_authority_node.generation = generation
                     domain_node.visited_urls.add(not_authority_node.url)
-                    if isStrictHub(not_authority_node.html, threshold=5):  # if this not-authority node is a strictHub
+                    if isStrictHub(not_authority_node.html, threshold=threshold):  # if this not-authority node is a strictHub
                         domain_node.Hub.add(not_authority_node)
                         not_authority_node.type = 'Hub'
                         authority = parse_node(node, domain_node.visited_urls)  # parse nodes if not visited
@@ -252,7 +253,7 @@ def parse_domain(domain_url):
     for _ in range(1):
         generation = generation + 1
         for node in deepcopy(domain_node.Authority):
-            if isStrictHub(node.html, 5):  # this Authority node is also a Hub node
+            if isStrictHub(node.html, threshold):  # this Authority node is also a Hub node
                 domain_node.Hub.add(node)
                 node.type = 'strictHub and Authority'
                 authority_list = parse_node(node, domain_node.visited_urls)  # parse nodes if not visited

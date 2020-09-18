@@ -3,7 +3,7 @@ import requests
 from utilities import isname, findChinese
 from time import time
 
-FORBIDDENNAMES = {'宋体', '博士后', '英才'}
+FORBIDDENNAMES = FORBIDDENNAMES = {'宋体', '博士后', '英才','博士生','查新','索引','须知','钱学森','李兆基',''}
 
 def isStrictHub(html, threshold=5):
     """
@@ -47,9 +47,9 @@ def isStrictHub(html, threshold=5):
     for textonlink in textlist:
         if isname(textonlink) and textonlink not in FORBIDDENNAMES:  # the content is a Chinese name
             names.add(textonlink)
-        #     print(textonlink)
-        # else:
-        #     print(f'not name:  {textonlink}')
+            print(textonlink)
+        else:
+            print(f'not name:  {textonlink}')
 
     return len(names) >= threshold and \
            ((len(astring) < 300) or float(len(names))/len(astring) > 0.05)
