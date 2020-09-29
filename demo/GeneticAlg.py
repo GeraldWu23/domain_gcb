@@ -6,7 +6,7 @@ from random import sample, random, shuffle
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from Sink_domain import parse_domain
-from utilities import roulette
+from utilities import roulette, get_domain_url
 from backward_link import page_backward_link_url as mutate
 
 # 爬行控制子系统
@@ -90,7 +90,7 @@ class CrawlControl:
                 if not domain:
                     continue
                 domain.get_score()
-                self.visited_domain.add(url)
+                self.visited_domain.add(get_domain_url(url))
                 children_domains.append(domain)  # add child to children list
 
             return children_domains
@@ -112,8 +112,9 @@ class CrawlControl:
                     continue
 
                 sleep(0.4)
+                print(f'mutating {domain}......')
                 _, url_list = mutate(domain.url)
-                url_list = [url for url in url_list if url not in self.visited_domain]
+                url_list = [get_domain_url(url) for url in url_list if get_domain_url(url) not in self.visited_domain]
                 if url_list:
                     mutation_pool.extend(url_list)  # add mutation urls to mutation_pool
 
@@ -137,6 +138,9 @@ class CrawlControl:
         children = __crossover(parents)
 
         self.population += mutants + children  # population changed
+
+        # make sure they are all domain_urls
+        
 
         return self.population
 

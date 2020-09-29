@@ -179,12 +179,14 @@ def record2mongo(dbname, key, value):
     :return: bool
     """
 
-    try:
-        client = MongoClient('mongodb://172.16.7.20:27017')  # server:172.16.7.20:27017
-        db = client['crawlab_test'][dbname]
-        db.insert_one({key:value})
-    except:
-        return False
+    #try:
+    client = MongoClient('mongodb://172.16.7.20:27017')  # server:172.16.7.20:27017
+    db = client['crawlab_test'][dbname]
+    if type(value) is not str:
+        value = str(value)
+    db.insert_one({key:value})
+    #except:
+    #    return False
     return True
 
 

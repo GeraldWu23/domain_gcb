@@ -11,19 +11,38 @@ if __name__ == '__main__':
     starttime = time()
     ecosys = CrawlControl(start_urls=['https://chemeng.hebut.edu.cn/',
                                       'http://chxy.cug.edu.cn/index.htm',
-                                      'https://cs.xidian.edu.cn/'],
-                          sel_quota=6,
-                          cr_quota=5,
-                          mut_quota=2,
+                                      'https://cs.xidian.edu.cn/',
+                                      'http://dmse.jlu.edu.cn/index.htm',
+                                      'https://cmse.szu.edu.cn/index.htm'],
+                          # TODO: for sel_quota and cr_quota, should it
+                          # TODO: be tuned according to the immediate size of population
+                          sel_quota=3,
+                          cr_quota=3,
+                          mut_quota=1,
                           mut_rate=0.2
                           )
 
+    recorded = set()  # recorded url
+    nmongo = 0  # id in mongo, no duplication in both dataset
+
     with open('logger.txt', 'w') as flog:
         flog.write('')  # clean logger
+        flog.write('start urls:\n')
+        for domain_node in ecosys.population:
+            flog.write(domain_node.url + '\n')  # start domain nodes
+            for node in domain_node.Hub:  # upload to MongoDB
+                record2mongo('domain_gcb_Hub', nmongo, str({'url': node.url, 'html': node.html, 'gen': -1}))
+                nmongo += 1
+                recorded.add(node.url)
+            for node in domain_node.Authority:
+                record2mongo('domain_gcb_Authority', nmongo, str({'url': node.url, 'html': node.html, 'gen': -1}))
+                nmongo += 1
+                recorded.add(node.url)
+
     with open('strictHub_logger.txt', 'w') as fhub:
         fhub.write('')  # clean stricthub logger
 
-    for gen in range(3):
+    for gen in range(10):
         with open('logger.txt', 'a') as flog:
             flog.write(f'\n\n\n\n\n------------ generation {gen} ------------\n')
             flog.write(f'\nstart time : {get_local_timestamp()}\n')
@@ -45,15 +64,22 @@ if __name__ == '__main__':
                 count_visited_urls += len(domain_node.visited_urls)
 
                 for node in domain_node.Hub:  # upload to MongoDB
-                    record2mongo('domain_gcb_Hub', node.url, node.html)
+                    if node.url in recorded: continue
+                    record2mongo('domain_gcb_Hub', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
+                    nmongo += 1
+                    recorded.add(node.url)
+
                 for node in domain_node.Authority:
-                    record2mongo('domain_gcb_Hub', node.url, node.html)
+                    if node.url in recorded: continue
+                    record2mongo('domain_gcb_Authority', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
+                    nmongo += 1
+                    recorded.add(node.url)
 
             flog.write(f'\n\nstrictHub count is : {count_strictHub}\n')
             flog.write(f'Authority count is : {count_Authority}\n')
             flog.write(f'visited urls are : {count_visited_urls}\n')
             flog.write(f'duration : {format_time_period(starttime, endtime)}\n')
-            flog.write(f'speed : {float(count_visited_urls)/int((endtime-starttime)/3600)} url(s)/h\n')
+            flog.write(f'speed : {float(count_visited_urls)/max(float((endtime-starttime)/3600), 1)} url(s)/h\n')
         with open('strictHub_logger.txt', 'a') as fhub:
             for domain_node in ecosys.population:
                 fhub.write(f'\n\n------------{domain_node.url}-------------\n')

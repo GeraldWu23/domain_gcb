@@ -35,7 +35,7 @@ def all_page_backward_link(url_input):
         "User_Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36",
         "Cookie": "_csrf=1d25c7af7a636c82663af5dd2a7e7bba837fc9b24871aff26e3bb8c6f35042caa%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22sTxVCp-kUc1FDI2lb0HF8izd7vhnNyE9%22%3B%7D; Hm_lvt_b37205f3f69d03924c5447d020c09192=1598233794; allSites=tech.sina.com.cn%7Clink.aizhan.com%2C0; userId=1327143; userName=xiaotianer1986%40sina.cn; userGroup=1; userSecure=bYv1Cid5g2VINbw%2F28NhKuz08%2Bs0n35WSf1zKcc7TECeYptHA0f47at4z%2Fb7Ta48LKtvzQ%3D%3D; Hm_lpvt_b37205f3f69d03924c5447d020c09192=1598234747"
         }
-    html_str, backward_link_url = page_backward_link_url(url,headers)  # 获取第一页的html，以及反向链接
+    html_str, backward_link_url = page_backward_link_url(url)  # 获取第一页的html，以及反向链接
 
     ##### 从html_str 获取 pager这个节点，以便能够获得翻页的结果 ######
     page_2_to_N_url = []   # 存放第二个页面到第N个页面的所有的反向链接url
@@ -55,7 +55,7 @@ def all_page_backward_link(url_input):
     ####  遍历 第2页到第N页，抓取每页里面的url，也就是反链接 #####
     for link in page_2_to_N_url:
         time.sleep(0.4)
-        _, backward_chain_url_temp = page_backward_link_url(link, headers)
+        _, backward_chain_url_temp = page_backward_link_url(link)
         # print(link)
         # print(len(backward_chain_url_temp))
         backward_link_url += backward_chain_url_temp

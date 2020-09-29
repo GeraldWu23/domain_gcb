@@ -145,8 +145,11 @@ def parse_node(node, forbidden=None):
         url_list = node.url_list
 
     # all the other offspring nodes are regarded as authority nodes
-    parsed_urls, content_list, html_list, offspring_list = parse(url_list)
-
+    try:
+        parsed_urls, content_list, html_list, offspring_list = parse(url_list)
+    except:
+        print('parse error')
+        return False
     offspring_nodes = [Node(url=url, content=content, html=html, url_list=list(set(url_list)))
                        for url, content, html, url_list in zip(parsed_urls, content_list, html_list, offspring_list)]
 
