@@ -77,7 +77,7 @@ class CrawlControl:
             children_domains = []  # children domains
             children_urls = []  # urls of children domains
             for domain in parents:
-                children_urls.extend([url for url in domain.domain_set if url not in self.visited_domain])
+                children_urls.extend([get_domain_url(url) for url in domain.domain_set if url not in self.visited_domain])
 
             children_urls = list(set(children_urls))
             if len(children_urls) > self.cr_quota:  # sample urls from domains under parents
@@ -113,10 +113,13 @@ class CrawlControl:
 
                 sleep(0.4)
                 print(f'mutating {domain}......')
-                _, url_list = mutate(domain.url)
-                url_list = [get_domain_url(url) for url in url_list if get_domain_url(url) not in self.visited_domain]
-                if url_list:
-                    mutation_pool.extend(url_list)  # add mutation urls to mutation_pool
+                try:
+                    _, url_list = mutate(domain.url)
+                    url_list = [get_domain_url(url) for url in url_list if get_domain_url(url) not in self.visited_domain]
+                    if url_list:
+                        mutation_pool.extend(url_list)  # add mutation urls to mutation_pool
+                except:  # requests in mutate() error
+                    pass
 
             mutation_pool = list(set(mutation_pool))  # remove duplication
             if self.mut_quota < len(mutation_pool):  # control size within set mutation quota

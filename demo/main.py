@@ -5,7 +5,7 @@ from time import time, localtime
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from GeneticAlg import CrawlControl
-from utilities import get_local_timestamp, format_time_period, record2mongo
+from utilities import get_local_timestamp, format_time_period, record2mongo, get_domain_url
 
 if __name__ == '__main__':
     starttime = time()
@@ -13,11 +13,12 @@ if __name__ == '__main__':
                                       'http://chxy.cug.edu.cn/index.htm',
                                       'https://cs.xidian.edu.cn/',
                                       'http://dmse.jlu.edu.cn/index.htm',
-                                      'https://cmse.szu.edu.cn/index.htm'],
+                                      'https://cmse.szu.edu.cn/index.htm',
+                                      'https://nxy.scau.edu.cn/'],
                           # TODO: for sel_quota and cr_quota, should it
                           # TODO: be tuned according to the immediate size of population
-                          sel_quota=3,
-                          cr_quota=3,
+                          sel_quota=2,
+                          cr_quota=5,
                           mut_quota=1,
                           mut_rate=0.2
                           )
@@ -31,18 +32,18 @@ if __name__ == '__main__':
         for domain_node in ecosys.population:
             flog.write(domain_node.url + '\n')  # start domain nodes
             for node in domain_node.Hub:  # upload to MongoDB
-                record2mongo('domain_gcb_Hub', nmongo, str({'url': node.url, 'html': node.html, 'gen': -1}))
+                record2mongo('domain_gcb_Hub', str(nmongo), str({'url': node.url, 'html': node.html, 'gen': -1}))
                 nmongo += 1
                 recorded.add(node.url)
             for node in domain_node.Authority:
-                record2mongo('domain_gcb_Authority', nmongo, str({'url': node.url, 'html': node.html, 'gen': -1}))
+                record2mongo('domain_gcb_Authority', str(nmongo), str({'url': node.url, 'html': node.html, 'gen': -1}))
                 nmongo += 1
                 recorded.add(node.url)
 
     with open('strictHub_logger.txt', 'w') as fhub:
         fhub.write('')  # clean stricthub logger
 
-    for gen in range(10):
+    for gen in range(5):
         with open('logger.txt', 'a') as flog:
             flog.write(f'\n\n\n\n\n------------ generation {gen} ------------\n')
             flog.write(f'\nstart time : {get_local_timestamp()}\n')
@@ -58,7 +59,7 @@ if __name__ == '__main__':
             count_Authority = 0
             count_visited_urls = 0
             for domain_node in ecosys.population:
-                flog.write(f'{domain_node.url}\n')
+                flog.write(f'{domain_node.url}({get_domain_url(domain_node.url)}): {domain_node.score}\n')
                 count_strictHub += len(domain_node.Hub)
                 count_Authority += len(domain_node.Authority)
                 count_visited_urls += len(domain_node.visited_urls)

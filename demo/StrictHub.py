@@ -3,7 +3,9 @@ import requests
 from utilities import isname, findChinese
 from time import time
 
-FORBIDDENNAMES = FORBIDDENNAMES = {'宋体', '博士后', '英才','博士生','查新','索引','须知','钱学森','李兆基',''}
+with open('./forbiddenword.txt', 'r', encoding='utf-8') as f:
+    FORBIDDENNAMES = set([word.strip() for word in f.readlines()])
+
 
 def isStrictHub(html, threshold=5):
     """
@@ -13,7 +15,7 @@ def isStrictHub(html, threshold=5):
     1. number of unique names is larger than threshold
     2. number of links smaller than 300 or the ratio of number of names
        against number of links is larger than 0.05
-    3. number of elements in Chinese text is not more than 3
+    3. number of elements in Chinese text is not more than 3 and less than 2
 
     :param html: html string
     :param threshold: more than how many names untill the webpage considered a hub page
@@ -28,7 +30,7 @@ def isStrictHub(html, threshold=5):
     # format html string and find all 'a' string
     html = html.lower()
     html_clean = ' '.join(html.split())
-    astring = re.findall(r'<a.*?>.*?</a>', html_clean)
+    astring = re.findall(r'<a href=.*?>.*?</a>', html_clean)
 
     # def containers
     names = set()
@@ -45,11 +47,12 @@ def isStrictHub(html, threshold=5):
     # find all Chinese names from those elements
     textlist = list(set([i for i in textlist if i]))
     for textonlink in textlist:
-        if isname(textonlink) and textonlink not in FORBIDDENNAMES:  # the content is a Chinese name
+        # the content is a Chinese name
+        if isname(textonlink) and textonlink not in FORBIDDENNAMES and len(textonlink) > 1:
             names.add(textonlink)
-        #     print(textonlink)  # FIXME
-        # else:
-        #     print(f'not name:  {textonlink}')
+            #print(textonlink)  # FIXME
+        #else:
+            #print(f'not name:  {textonlink}')
 
     return len(names) >= threshold and \
            ((len(astring) < 300) or float(len(names))/len(astring) > 0.05)
@@ -59,7 +62,7 @@ def isStrictHub(html, threshold=5):
 
 if __name__ == '__main__':
     starttime = time()
-    html = str(requests.get('http://zsb.jlu.edu.cn/list/132.html').content, encoding='utf-8')
+    html = str(requests.get('https://nxy.scau.edu.cn/484/list.htm').content, encoding='utf-8')
     print(isStrictHub(html))
 
     endtime = time()

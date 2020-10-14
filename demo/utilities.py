@@ -27,7 +27,7 @@ def isname(text):
                 contain_pers_bool = True
         return contain_pers_bool
 
-    return __name_in(text) and len(text) <= 3
+    return __name_in(text) and len(text) <= 3 and len(text) > 1
 
 
 def findChinese(text):
@@ -190,6 +190,15 @@ def record2mongo(dbname, key, value):
     return True
 
 
+def legalurl(url, support_url):
+    """
+    :param url: the url that need to be legal
+    :param support_url: url that complement an illegal url with
+    :return: url with support_url as prefix
+    """
+    if len(url) < 4 or url[:4] != 'http':
+        url = support_url + url
+    return url
 
 
 if __name__ == '__main__':
