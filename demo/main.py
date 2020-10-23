@@ -17,10 +17,10 @@ if __name__ == '__main__':
                                       'https://nxy.scau.edu.cn/'],
                           # TODO: for sel_quota and cr_quota, should it
                           # TODO: be tuned according to the immediate size of population
-                          sel_quota=2,
-                          cr_quota=5,
-                          mut_quota=1,
-                          mut_rate=0.2
+                          sel_quota=3,
+                          cr_quota=20,
+                          mut_quota=2,
+                          mut_rate=0.15
                           )
 
     recorded = set()  # recorded url
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     with open('strictHub_logger.txt', 'w') as fhub:
         fhub.write('')  # clean stricthub logger
 
-    for gen in range(5):
+    for gen in range(30):
         with open('logger.txt', 'a') as flog:
             flog.write(f'\n\n\n\n\n------------ generation {gen} ------------\n')
             flog.write(f'\nstart time : {get_local_timestamp()}\n')
@@ -66,21 +66,26 @@ if __name__ == '__main__':
 
                 for node in domain_node.Hub:  # upload to MongoDB
                     if node.url in recorded: continue
-                    record2mongo('domain_gcb_Hub', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
+                    record_avail = record2mongo('domain_gcb_Hub', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
                     nmongo += 1
                     recorded.add(node.url)
+                    if not record_avail:
+                        flog.write(f'record Hubs failed\n')
 
                 for node in domain_node.Authority:
                     if node.url in recorded: continue
-                    record2mongo('domain_gcb_Authority', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
+                    record_avail = record2mongo('domain_gcb_Authority', str(nmongo), str({'url':node.url, 'html':node.html, 'gen':gen}))
                     nmongo += 1
                     recorded.add(node.url)
+                    if not record_avail:
+                        flog.write(f'record Authorities failed\n')
 
             flog.write(f'\n\nstrictHub count is : {count_strictHub}\n')
             flog.write(f'Authority count is : {count_Authority}\n')
             flog.write(f'visited urls are : {count_visited_urls}\n')
             flog.write(f'duration : {format_time_period(starttime, endtime)}\n')
-            flog.write(f'speed : {float(count_visited_urls)/max(float((endtime-starttime)/3600), 1)} url(s)/h\n')
+            flog.write(f'speed : {float(count_visited_urls)/float(float(endtime-starttime)/3600)} url(s)/h\n')
+            flog.write(f'total visited num: {len(ecosys.visited_domain)}')
         with open('strictHub_logger.txt', 'a') as fhub:
             for domain_node in ecosys.population:
                 fhub.write(f'\n\n------------{domain_node.url}-------------\n')

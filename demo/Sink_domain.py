@@ -262,6 +262,8 @@ def parse_domain(domain_url, threshold=5):
                 authority_list = parse_node(node, domain_node.visited_urls)  # parse nodes if not visited
                 for url in node.url_list:  # in case that url in url_list different from that in parsed_list
                     domain_node.visited_urls.add(url)
+                if not authority_list:
+                    continue
                 for authority_node in authority_list:
                     authority_node.generation = generation
                     authority_node.type = 'Authority'

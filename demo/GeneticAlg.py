@@ -9,6 +9,8 @@ from Sink_domain import parse_domain
 from utilities import roulette, get_domain_url
 from backward_link import page_backward_link_url as mutate
 
+MAXSIZE = 100  # maximum size of population
+
 # 爬行控制子系统
 class CrawlControl:
 
@@ -21,6 +23,7 @@ class CrawlControl:
         self.mut_quota = mut_quota  # number of mutation picked from each domain
         self.mut_rate = mut_rate  # by which rate a node mutates
         self.strictHubthres = strictHubthres
+        self.poolsize = MAXSIZE  # max size of population: __eliminate() will be called when size exceeds this number
 
         for url in start_urls:
             try:
@@ -135,11 +138,22 @@ class CrawlControl:
 
             return mutants
 
+        def __eliminate(frac=0.2):
+            if len(self.population) <= self.poolsize:
+                # eliminate 0.01(false requested domain)
+                self.population = [node for node in self.population if node.score == 0.01]
+                return True
+            self.population = sorted(self.population, key=lambda domain: domain.score, reverse=False)
+            self.population = self.population[round(frac * len(self.population)):]
+            # eliminate 0.01(false requested domain)
+            self.population = [node for node in self.population if node.score == 0.01]  # filter wrong parsed node after elimination
+
         # main events in an evolution
         mutants = __mutate(self.population)  # mutate before parent domain nodes are picked out
         parents = __select()
         children = __crossover(parents)
 
+        __eliminate(0.2)  # remove the worst 20% of the population if it's too large
         self.population += mutants + children  # population changed
 
         # make sure they are all domain_urls
