@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from Sink_domain import parse_domain
 from utilities import roulette, get_domain_url
 from backward_link import page_backward_link_url as mutate
-
 MAXSIZE = 100  # maximum size of population
 
 # 爬行控制子系统
@@ -24,21 +23,34 @@ class CrawlControl:
         self.mut_rate = mut_rate  # by which rate a node mutates
         self.strictHubthres = strictHubthres
         self.poolsize = MAXSIZE  # max size of population: __eliminate() will be called when size exceeds this number
+        self.genmarker = 0  # how many evolves involved of this ecosystem
 
         for url in start_urls:
             try:
                 if url not in self.visited_domain:
                     domain_node = parse_domain(url, self.strictHubthres)
                     domain_node.get_score()
+                    domain_node.gen = -1
                     self.population.append(domain_node)
                     self.visited_domain.add(domain_node.url)
             except:
                 pass
+        
+        with open('evolve_logger.txt', 'a') as f:
+            f.write(f'\nbefore anything: {len(self.population)}')
+            for node in self.population:
+                f.write(f'\n{node.url}')
+                            
 
     def evolve(self):
         if not self.population:
             print('nothing to evolve')
             return False
+
+        # get domain urls
+        for domain_node in self.population:
+            domain_node.url = get_domain_url(domain_node.url)        
+
 
         # selection
         def __select():
@@ -64,6 +76,12 @@ class CrawlControl:
                 except:
                     print('illegal situation in selection')
                     break
+            
+            with open('evolve_logger.txt', 'a') as f:
+                f.write(f'\nafter selection: {len(self.population)}') 
+                for node in self.population:
+                    f.write(f'{node.url}\n')
+
             return parents
 
         # crossover
@@ -95,6 +113,11 @@ class CrawlControl:
                 domain.get_score()
                 self.visited_domain.add(get_domain_url(url))
                 children_domains.append(domain)  # add child to children list
+
+            with open('evolve_logger.txt', 'a') as f: 
+                f.write(f'\nafter crossover: {len(self.population)}\n')
+                for node in self.population:
+                    f.write(f'{node.url}\n')
 
             return children_domains
 
@@ -136,17 +159,28 @@ class CrawlControl:
                 self.visited_domain.add(domain.url)
                 mutants.append(domain)  # add mutants to mutant list
 
+            with open('evolve_logger.txt', 'a') as f: 
+                f.write(f'\n\n\n-----------------------\nafter mutation: {len(self.population)}')
+                for node in self.population:
+                    f.write(f'{node.url}\n')
+
             return mutants
 
         def __eliminate(frac=0.2):
             if len(self.population) <= self.poolsize:
-                # eliminate 0.01(false requested domain)
-                self.population = [node for node in self.population if node.score == 0.01]
+                # eliminate 0.01(false requested domain or no Authority page under this domain)
+                self.population = [node for node in self.population if node.score != 0.01]
                 return True
             self.population = sorted(self.population, key=lambda domain: domain.score, reverse=False)
             self.population = self.population[round(frac * len(self.population)):]
             # eliminate 0.01(false requested domain)
-            self.population = [node for node in self.population if node.score == 0.01]  # filter wrong parsed node after elimination
+            self.population = [node for node in self.population if node.score != 0.01]  # filter wrong parsed node after elimination
+
+            with open('evolve_logger.txt', 'a') as f: 
+                f.write(f'\nafter elimination: {len(self.population)}')
+                for node in self.population:
+                    f.write(f'{node.url}\n')
+
 
         # main events in an evolution
         mutants = __mutate(self.population)  # mutate before parent domain nodes are picked out
@@ -155,10 +189,13 @@ class CrawlControl:
 
         __eliminate(0.2)  # remove the worst 20% of the population if it's too large
         self.population += mutants + children  # population changed
-
         # make sure they are all domain_urls
         
-
+        # generation marker
+        for domain_node in self.population:
+           if domain_node.gen is None:
+               domain_node.gen = self.genmarker
+        self.genmarker += 1
         return self.population
 
 

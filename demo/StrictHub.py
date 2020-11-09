@@ -1,6 +1,6 @@
 import re
 import requests
-from utilities import isname, findChinese
+from utilities import isname, findChinese, get_domain_url, legalurl
 from time import time
 
 with open('./forbiddenword.txt', 'r', encoding='utf-8') as f:
@@ -50,21 +50,52 @@ def isStrictHub(html, threshold=5):
         # the content is a Chinese name
         if isname(textonlink) and textonlink not in FORBIDDENNAMES and len(textonlink) > 1:
             names.add(textonlink)
-            #print(textonlink)  # FIXME
-        #else:
-            #print(f'not name:  {textonlink}')
+            print(textonlink)  # FIXME
+        # else:
+        #     print(f'not name:  {textonlink}')
 
     return len(names) >= threshold and \
            ((len(astring) < 300) or float(len(names))/len(astring) > 0.05)
 
 
+def get_name_urls(url, html):
+    """
+    get name urls from a strictHub page
+
+    :param url: url of this page
+    :param html: html string
+    :return: a list of name urls
+    """
+
+    head = get_domain_url(url)
+
+    # format html string and find all 'a' string
+    html_clean = ' '.join(html.split())
+    astring = re.findall(r'<a href=.*?>.*?</a>', html_clean)  # a href block
+    print(astring)
+    # def containers
+    url_list = []
+
+    for ahref in astring:
+        textlist = re.findall(r'>.+?<', ahref)
+        text = ''.join(textlist)
+        Chinese_list = findChinese(text)
+        if Chinese_list and sum([isname(chinese) for chinese in Chinese_list]) > 0:
+            try:
+                url_text = re.findall(r'<a href=.+?>', ahref)[0].split()[1][6:-1]
+                name_url = legalurl(url_text, head)
+                print(name_url)
+                url_list.append(name_url)
+            except:
+                pass
 
 
 if __name__ == '__main__':
     starttime = time()
-    html = str(requests.get('https://nxy.scau.edu.cn/484/list.htm').content, encoding='utf-8')
+    url = 'http://www.ccerdao.gov.cn/wzdt/'
+    html = str(requests.get(url).content, encoding='utf-8')
+    # get_name_urls(url, html)
     print(isStrictHub(html))
-
     endtime = time()
     print(f'used time is {endtime - starttime}')
 

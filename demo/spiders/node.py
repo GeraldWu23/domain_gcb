@@ -65,6 +65,8 @@ class Domain(Node):
         self.domain_set = {get_domain_url(url)}  # all domain urls under this domain
         self.Domain_score = None
         self.score = None
+        self.gen = None
+
 
     def get_score(self):
         """
@@ -81,7 +83,8 @@ class Domain(Node):
         if nA >= nV or nA < 0:
             return False
         try:
-            self.score = log(nA) * (nA / nV) ** 0.06
+            nA = max(nA, 1)  # avoid error by nA = 0
+            self.score = log(nA) * (nA / nV) ** 0.06 + 0.05  # greater than error parsed domain
         except:
             self.score = 0.01  # set a minimum score which is not 0
         return self.score  # TODO: make a smoother curve when x > 0.05

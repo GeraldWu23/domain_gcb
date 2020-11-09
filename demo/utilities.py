@@ -170,21 +170,23 @@ def format_time_period(start=None, end=None):
     return res
 
 
-def record2mongo(dbname, key, value):
+def record2mongo(collectionname, infodict, database='crawlab_test'):
     """
     record key value pair to crawlab_test
-    :param dbname: str
-    :param key: record key
-    :param value: record value
+    :param collectionname: str
+    :param infodict: dict to record
+    :param database: name of database, str(Client[database][collectionname])
     :return: bool
     """
 
     try:
         client = MongoClient('mongodb://172.16.7.20:27017')  # server:172.16.7.20:27017
-        db = client['crawlab_test'][dbname]
-        if type(value) is not str:
-            value = str(value)
-        db.insert_one({key:value})
+        db = client[database][collectionname]
+        if type(infodict) is not dict:
+            infodict = eval(infodict)
+
+        infodict['time'] = get_local_timestamp()  # add datetime
+        db.insert_one(infodict)
     except:
         return False
     return True
